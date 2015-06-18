@@ -1,0 +1,3 @@
+A short exercise for practicing Javascript and jQuery.  This exercise is intended to help me practice animation effects and more complicated control flow procedures.  Additionally, I want to learn more about the canvas element and requestAnimationFrame() method from Javascript.
+
+This is a sidescroller where the object of the game is to collect as many coins as you can.  Right and left arrow keys move the character around the level.  The up arrow key or spacebar make the character jump.  See if you can beat your friends!
