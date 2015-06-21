@@ -9,6 +9,8 @@ var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d"),
     width = 1000,
     height = 200,
+    coinsCollected = 0,
+    coinSpawnChance = 0.01,
     player = {
 		  x : width/2,
 		  y : height - 5,
@@ -33,6 +35,9 @@ var canvas = document.getElementById("canvas"),
 canvas.width = width;
 canvas.height = height;
 
+coinImg = new Image();
+coinImg.src = "assets/coin.png";
+
 //Adding background images to the level
 var background = [];
 background.push({x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()});
@@ -40,7 +45,7 @@ background[0].img.src = "assets/sky.png";
 background[1].img.src = "assets/mountains.png";
 background[2].img.src = "assets/treeline.png";
 
-//Adding obstacles to the level
+//Adding terrain to the level
 var boxes = [];
 boxes.push({
     x: 0,
@@ -48,6 +53,9 @@ boxes.push({
     width: width,
     height: minBoxHeight + boxBuffer
 });
+
+//Adding coins to the level
+var coins = [];
  
 // The update function which calculates each animation frame
 function update(){
@@ -88,7 +96,17 @@ function update(){
 		});
 	}
 
-	//Adjust background, player and box positions for scrolling effect
+	//Add coin to end of level randomly
+	if(Math.random() < coinSpawnChance && boxes[boxes.length-1].x+boxes[boxes.length-1].width > width+coinImg.width){
+		coins.push({
+			x: width,
+			y: Math.random()*(boxes[boxes.length-1].y - coinImg.height),
+			width: coinImg.width,
+			height: coinImg.height
+		})
+	}
+
+	//Adjust background, player, coin and box positions for scrolling effect
 	//Background
 	for(var i=0; i<background.length; i++){
 		if(background[i].x <= -width*2){
@@ -98,6 +116,14 @@ function update(){
 	}
 	//Player
 	player.x -= 1;
+	//Coin
+	for(var i=0; i<coins.length; i++){
+		coins[i].x -= 1;
+		if(coins[i].x+coins[i].width < 0){
+			coins.splice(i,1);
+			i -= 1;
+		}
+	}
 	//Box
 	if(boxes[0].x+boxes[0].width < 0){
 		boxes.splice(0,1);
@@ -123,8 +149,8 @@ function update(){
   player.x += player.velX;
 	player.y += player.velY;
 
-  //Draw our obstacles
-  ctx.fillStyle = "grey";
+  //Draw the terrain
+  ctx.fillStyle = "#334C33";
 	ctx.beginPath();
 	player.grounded = false;
 	for (var i = 0; i < boxes.length; i++) {
@@ -143,9 +169,24 @@ function update(){
 	}
 	ctx.fill();
 
-	ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,10);
-	ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,30);
-	ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,50);
+	//Draw coins and remove if player hits them
+	for (var i = 0; i < coins.length; i++) {
+		var dir = colCheck(player, coins[i]);
+		if(dir !== null){
+			coinsCollected += 1;
+			coins.splice(i,1);
+			i -= 1;
+		}else{
+			ctx.drawImage(coinImg, coins[i].x, coins[i].y);
+		}
+	}
+
+	ctx.fillStyle = "grey";
+	ctx.font = "15px Arial";
+	ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,20);
+	ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,40);
+	ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,60);
+	ctx.fillText("Coins Collected: "+coinsCollected,width-150,20);
 
 	//Draw player
   ctx.fillStyle = "red";
