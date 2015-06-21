@@ -12,8 +12,8 @@ var canvas = document.getElementById("canvas"),
     player = {
 		  x : width/2,
 		  y : height - 5,
-		  width : 5,
-		  height : 5,
+		  width : 10,
+		  height : 10,
 		  speed: 3,
 		  velX: 0,
 		  velY: 0,
@@ -22,7 +22,13 @@ var canvas = document.getElementById("canvas"),
 		},
 		keys = [],
 		friction = 0.8,
-		gravity = 0.3;
+		gravity = 0.3,
+		maxBoxHeight = 30,
+		minBoxHeight = 2,
+		maxBoxWidth = 100,
+		minBoxWidth = 10,
+		boxBuffer = 100,		//How far boxes go underneath canvas
+		minStepSize = 2;
 
 canvas.width = width;
 canvas.height = height;
@@ -30,17 +36,17 @@ canvas.height = height;
 //Adding background images to the level
 var background = [];
 background.push({x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()});
-background[0].img.src = 'assets/sky.png';
-background[1].img.src = 'assets/mountains.png';
-background[2].img.src = 'assets/treeline.png';
+background[0].img.src = "assets/sky.png";
+background[1].img.src = "assets/mountains.png";
+background[2].img.src = "assets/treeline.png";
 
 //Adding obstacles to the level
 var boxes = [];
 boxes.push({
     x: 0,
-    y: height - 2,
+    y: height - minBoxHeight,
     width: width,
-    height: 50
+    height: minBoxHeight + boxBuffer
 });
  
 // The update function which calculates each animation frame
@@ -69,16 +75,16 @@ function update(){
 
 	//Add box to end of level if needed
 	var last_index = boxes.length-1;
-	if(boxes[last_index].x + boxes[last_index].width <= width+2){
-		var tempHeight = 2+Math.random()*(boxes[last_index].height-20);
-		if(tempHeight > height+30){
-			tempHeight = height+30;
+	if(boxes[last_index].x + boxes[last_index].width <= width+minStepSize){
+		var tempHeight = Math.floor(minBoxHeight+Math.random()*(boxes[last_index].height-boxBuffer+maxBoxHeight-minBoxHeight));
+		if(boxes[last_index].y-tempHeight < player.height+5){
+			tempHeight = player.height+5;
 		}
 		boxes.push({
 			x: width,
-	    y: height - Math.floor(tempHeight),
-	    width: 10+Math.floor(Math.random()*80),
-	    height: 50+tempHeight
+	    y: height - tempHeight,
+	    width: minBoxWidth+Math.floor(Math.random()*(maxBoxWidth-minBoxWidth)),
+	    height: tempHeight + boxBuffer
 		});
 	}
 
@@ -114,6 +120,9 @@ function update(){
   	ctx.drawImage(background[i].img, background[i].x+width*2, background[i].y);
   }
 
+  player.x += player.velX;
+	player.y += player.velY;
+
   //Draw our obstacles
   ctx.fillStyle = "grey";
 	ctx.beginPath();
@@ -124,6 +133,7 @@ function update(){
       player.velX = 0;
       player.jumping = false;
 		} else if (dir === "b") {
+			player.velY = 0;
 		  player.grounded = true;
 		  player.jumping = false;
 		} else if (dir === "t") {
@@ -133,14 +143,9 @@ function update(){
 	}
 	ctx.fill();
 
-	if(player.grounded){
-    player.velY = 0;
-	}
-	player.x += player.velX;
-	player.y += player.velY;
-
 	ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,10);
-	ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,30);
+	ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,30);
+	ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,50);
 
 	//Draw player
   ctx.fillStyle = "red";
@@ -163,7 +168,7 @@ function colCheck(shapeA, shapeB) {
   if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
   	// figures out on which side we are colliding (top, bottom, left, or right)
   	var oX = hWidths - Math.abs(vX),
-  			oY = (hHeights - Math.abs(vY)).toFixed(8);
+  			oY = hHeights - Math.abs(vY);
 		if (oX >= oY) {
 		  if (vY > 0) {
 		    colDir = "t";
@@ -198,3 +203,24 @@ $('body').keyup(function(key) {
 $(document).ready(function(){
 	update();
 });
+
+/*Add box to end of level if needed HORIZONTAL STACKING!
+	if(Math.random() < boxSpawnChance){
+		var lastBoxY = height, lastBoxWidth = 0;
+		//Find highest box on map edge to spawn
+		for(var i=0; i<boxes.length; i++){
+			if(boxes[i].x+boxes[i].width > width+minBoxWidth && boxes[i].y < lastBoxY){
+				lastBoxY = boxes[i].y;
+				lastBoxWidth = (boxes[i].x+boxes[i].width)-width;
+			}
+		}
+		//Find height for box
+		var tempY = lastBoxY - Math.floor(Math.random()*maxBoxHeight);
+		if(tempY < 30){tempY = 30;}
+		boxes.push({
+	    x: width,
+	    y: tempY,
+	    width: minBoxWidth+Math.floor(Math.random()*(lastBoxWidth-minBoxWidth)),
+	    height: lastBoxY-tempY
+		});
+	}*/
