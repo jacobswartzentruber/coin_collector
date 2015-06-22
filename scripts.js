@@ -87,7 +87,7 @@ function update(){
 			tempHeight = player.height+5;
 		}
 		boxes.push({
-			x: width,
+			x: boxes[last_index].x + boxes[last_index].width,
 	    y: height - tempHeight,
 	    width: minBoxWidth+Math.floor(Math.random()*(maxBoxWidth-minBoxWidth)),
 	    height: tempHeight + boxBuffer
@@ -193,6 +193,7 @@ function update(){
   ctx.fillStyle = "red";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
+  //Draw coins collected text, game over screen and debug display information
 	if(playing){
 		ctx.fillStyle = "grey";
 		ctx.font = "15px Arial";
