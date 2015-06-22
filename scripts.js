@@ -10,6 +10,7 @@ var canvas = document.getElementById("canvas"),
     width = 1000,
     height = 200,
     playing = true,
+    currentFrame = 0,
     coinsCollected = 0,
     coinSpawnChance = 0.01,
     levelSpeed = 1,
@@ -39,8 +40,9 @@ var canvas = document.getElementById("canvas"),
 canvas.width = width;
 canvas.height = height;
 
+coinFrame = 0;
 coinImg = new Image();
-coinImg.src = "assets/coin.png";
+coinImg.src = "assets/coin_sprite.png";
 
 //Adding background images to the level
 var background = [];
@@ -95,11 +97,11 @@ function update(){
 	}
 
 	//Add coin to end of level randomly
-	if(Math.random() < coinSpawnChance && boxes[boxes.length-1].x+boxes[boxes.length-1].width > width+coinImg.width){
+	if(Math.random() < coinSpawnChance && boxes[boxes.length-1].x+boxes[boxes.length-1].width > width+12){
 		coins.push({
 			x: width,
 			y: Math.random()*(boxes[boxes.length-1].y - coinImg.height),
-			width: coinImg.width,
+			width: 12,
 			height: coinImg.height
 		})
 	}
@@ -185,8 +187,12 @@ function update(){
 			coins.splice(i,1);
 			i -= 1;
 		}else{
-			ctx.drawImage(coinImg, coins[i].x, coins[i].y);
+			ctx.drawImage(coinImg, coinFrame*2+coinFrame*11, 0, 12, 14, coins[i].x, coins[i].y, 12, 14);
 		}
+	}
+	if(currentFrame%6 === 0){
+		coinFrame += 1;
+		if(coinFrame > 4){coinFrame = 0;}
 	}
 
 	//Draw player
@@ -226,6 +232,7 @@ function update(){
   
   // run through the loop again
   if(playing){
+  	currentFrame += 1;
   	requestAnimationFrame(update);
   }
 }
@@ -233,6 +240,7 @@ function update(){
 function resetLevel(){
 	coinsCollected = 0;
   levelSpeed = 1;
+  currentFrame = 0;
   player = {
 	  x : width/2,
 	  y : height - 5,
