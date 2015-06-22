@@ -15,6 +15,7 @@ var canvas = document.getElementById("canvas"),
     coinSpawnChance = 0.01,
     levelSpeed = 1,
     levelSpeedUp = 0.001,
+    maxSpeedPercent = 0.73,
     player = {
 		  x : width/2,
 		  y : height - 5,
@@ -24,12 +25,13 @@ var canvas = document.getElementById("canvas"),
 		  velX: 0,
 		  velY: 0,
 		  jumping : false,
+		  doubleJump: false,
 		  grounded: false
 		},
 		keys = [],
 		friction = 0.8,
 		gravity = 0.3,
-		maxBoxHeight = 50,
+		maxBoxHeight = 90,
 		minBoxHeight = 10,
 		variableBoxHeight = minBoxHeight,
 		maxBoxWidth = 100,
@@ -70,6 +72,9 @@ function update(){
 	   player.jumping = true;
 	   player.grounded = false;
 	   player.velY = -player.speed*1.5;
+	  }else if(player.velY>0 && !player.doubleJump){
+	  	player.velY = -player.speed*1.3;
+	  	player.doubleJump = true;
 	  }
 	}
 	if (keys[39]) {
@@ -183,6 +188,7 @@ function update(){
 			player.velY = 0;
 		  player.grounded = true;
 		  player.jumping = false;
+		  player.doubleJump = false;
 		} else if (dir === "t") {
 		  player.velY *= -1;
 		}
@@ -225,7 +231,7 @@ function update(){
 		ctx.textAlign = "left";
 		ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,20);
 		ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,40);
-		ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,60);
+		ctx.fillText("Jumping:"+player.jumping+"DoubleJump:"+player.doubleJump+" Grounded:"+player.grounded,10,60);
 		ctx.fillText("Level Speed:"+levelSpeed+" BoxHeight: "+variableBoxHeight,10,80);
 		ctx.fillText("Coins Collected: "+coinsCollected,width-150,20);
 	}else{
@@ -242,7 +248,7 @@ function update(){
 	}
 
   //Speed up level and player
-  if(levelSpeed < player.speed*0.80){
+  if(levelSpeed < player.speed*maxSpeedPercent){
   	levelSpeed += levelSpeedUp;
   }
   if(variableBoxHeight <= maxBoxHeight){
@@ -269,6 +275,7 @@ function resetLevel(){
 	  velX: 0,
 	  velY: 0,
 	  jumping : false,
+	  doubleJump: false,
 	  grounded: false
 	};
 	variableBoxHeight = minBoxHeight,
