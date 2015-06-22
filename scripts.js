@@ -48,11 +48,19 @@ coinImg.src = "assets/coin_sprite.png";
 
 //Adding background images to the level
 var background = [];
-background.push({x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()});
+background.push(
+	{x: 0, y: 0, img: new Image()},
+	{x: 0, y: 0, img: new Image()},
+	{x: 0, y: 0, img: new Image()},
+	{x: 0, y: 0, img: new Image()}
+);
 background[0].img.src = "assets/sky.png";
 background[1].img.src = "assets/mountains.png";
 background[2].img.src = "assets/treeline.png";
 background[3].img.src = "assets/terrain.jpg";
+
+var foreground = {x: 0, y: 0, img: new Image()};
+foreground.img.src = "";
 
 var grass = new Image();
 grass.src = "assets/grass.png";
@@ -123,6 +131,11 @@ function update(){
 		}
 		background[i].x -= levelSpeed/(3/i);
 	}
+	//Foreground
+	if(foreground.x <= -width*2){
+		foreground.x = 0;
+	}
+	foreground.x -= levelSpeed*1.30;
 	//Player
 	player.x -= levelSpeed;
 	//Coin
@@ -223,6 +236,10 @@ function update(){
 		coinFrame += 1;
 		if(coinFrame > 4){coinFrame = 0;}
 	}
+
+	//Draw foreground
+	ctx.drawImage(foreground.img, foreground.x, foreground.y);
+	ctx.drawImage(foreground.img, foreground.x+width*2, foreground.y);
 
   //Draw coins collected text, game over screen and debug display information
 	if(playing){
