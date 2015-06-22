@@ -30,7 +30,7 @@ var canvas = document.getElementById("canvas"),
 		friction = 0.8,
 		gravity = 0.3,
 		maxBoxHeight = 50,
-		minBoxHeight = 2,
+		minBoxHeight = 10,
 		variableBoxHeight = minBoxHeight,
 		maxBoxWidth = 100,
 		minBoxWidth = 10,
@@ -46,10 +46,14 @@ coinImg.src = "assets/coin_sprite.png";
 
 //Adding background images to the level
 var background = [];
-background.push({x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()});
+background.push({x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()},{x: 0, y: 0, img: new Image()});
 background[0].img.src = "assets/sky.png";
 background[1].img.src = "assets/mountains.png";
 background[2].img.src = "assets/treeline.png";
+background[3].img.src = "assets/terrain.jpg";
+
+var grass = new Image();
+grass.src = "assets/grass.png";
 
 //Adding terrain to the level
 var boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight + boxBuffer}];
@@ -112,7 +116,7 @@ function update(){
 		if(background[i].x <= -width*2){
 			background[i].x = 0;
 		}
-		background[i].x -= 0.2*(i+levelSpeed);
+		background[i].x -= levelSpeed/(3/i);
 	}
 	//Player
 	player.x -= levelSpeed;
@@ -146,7 +150,7 @@ function update(){
   ctx.clearRect(0,0,width,height);
 
   //Draw the background
-  for(var i=0; i<background.length; i++){
+  for(var i=0; i<background.length-1; i++){
   	ctx.drawImage(background[i].img, background[i].x, background[i].y);
   	ctx.drawImage(background[i].img, background[i].x+width*2, background[i].y);
   }
@@ -159,10 +163,17 @@ function update(){
   player.x += player.velX;
 	player.y += player.velY;
 
+	//Draw player
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
   //Draw the terrain
   ctx.fillStyle = "#334C33";
 	ctx.beginPath();
 	player.grounded = false;
+
+	ctx.save();
+	ctx.beginPath();
 	for (var i = 0; i < boxes.length; i++) {
 		var dir = colCheck(player, boxes[i]);
 		if (dir === "l" || dir === "r") {
@@ -175,9 +186,21 @@ function update(){
 		} else if (dir === "t") {
 		  player.velY *= -1;
 		}
-	  ctx.rect(boxes[i].x, boxes[i].y, boxes[i].width, boxes[i].height);
+	  ctx.lineTo(boxes[i].x, boxes[i].y);
+	  ctx.lineTo(boxes[i].x+boxes[i].width, boxes[i].y);
+	  ctx.drawImage(grass, 0, 0, boxes[i].width, grass.height, boxes[i].x, boxes[i].y-grass.height, boxes[i].width, grass.height);
 	}
-	ctx.fill();
+	ctx.lineTo(width, height);
+	ctx.lineTo(0,height);
+	ctx.closePath();
+	/// define this Path as clipping mask
+	ctx.clip();
+	/// draw the image
+	ctx.drawImage(background[3].img,background[3].x,background[3].y);
+	ctx.drawImage(background[3].img, background[3].x+width*2, background[3].y);
+	/// reset clip to default
+	ctx.restore();
+	
 
 	//Draw coins and remove if player hits them
 	for (var i = 0; i < coins.length; i++) {
@@ -194,10 +217,6 @@ function update(){
 		coinFrame += 1;
 		if(coinFrame > 4){coinFrame = 0;}
 	}
-
-	//Draw player
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
 
   //Draw coins collected text, game over screen and debug display information
 	if(playing){
