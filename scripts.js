@@ -9,14 +9,17 @@ var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d"),
     width = 1000,
     height = 200,
+    playing = true,
     coinsCollected = 0,
     coinSpawnChance = 0.01,
+    levelSpeed = 1,
+    levelSpeedUp = 0.001,
     player = {
 		  x : width/2,
 		  y : height - 5,
 		  width : 10,
 		  height : 10,
-		  speed: 3,
+		  speed: 4,
 		  velX: 0,
 		  velY: 0,
 		  jumping : false,
@@ -25,8 +28,9 @@ var canvas = document.getElementById("canvas"),
 		keys = [],
 		friction = 0.8,
 		gravity = 0.3,
-		maxBoxHeight = 30,
+		maxBoxHeight = 50,
 		minBoxHeight = 2,
+		variableBoxHeight = minBoxHeight,
 		maxBoxWidth = 100,
 		minBoxWidth = 10,
 		boxBuffer = 100,		//How far boxes go underneath canvas
@@ -46,13 +50,7 @@ background[1].img.src = "assets/mountains.png";
 background[2].img.src = "assets/treeline.png";
 
 //Adding terrain to the level
-var boxes = [];
-boxes.push({
-    x: 0,
-    y: height - minBoxHeight,
-    width: width,
-    height: minBoxHeight + boxBuffer
-});
+var boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight + boxBuffer}];
 
 //Adding coins to the level
 var coins = [];
@@ -65,7 +63,7 @@ function update(){
 	  if(!player.jumping && player.grounded){
 	   player.jumping = true;
 	   player.grounded = false;
-	   player.velY = -player.speed*2;
+	   player.velY = -player.speed*1.5;
 	  }
 	}
 	if (keys[39]) {
@@ -84,7 +82,7 @@ function update(){
 	//Add box to end of level if needed
 	var last_index = boxes.length-1;
 	if(boxes[last_index].x + boxes[last_index].width <= width+minStepSize){
-		var tempHeight = Math.floor(minBoxHeight+Math.random()*(boxes[last_index].height-boxBuffer+maxBoxHeight-minBoxHeight));
+		var tempHeight = Math.floor(minBoxHeight+Math.random()*(boxes[last_index].height-boxBuffer+variableBoxHeight-minBoxHeight));
 		if(boxes[last_index].y-tempHeight < player.height+5){
 			tempHeight = player.height+5;
 		}
@@ -112,13 +110,13 @@ function update(){
 		if(background[i].x <= -width*2){
 			background[i].x = 0;
 		}
-		background[i].x -= 0.2*(i+1);
+		background[i].x -= 0.2*(i+levelSpeed);
 	}
 	//Player
-	player.x -= 1;
+	player.x -= levelSpeed;
 	//Coin
 	for(var i=0; i<coins.length; i++){
-		coins[i].x -= 1;
+		coins[i].x -= levelSpeed;
 		if(coins[i].x+coins[i].width < 0){
 			coins.splice(i,1);
 			i -= 1;
@@ -129,13 +127,18 @@ function update(){
 		boxes.splice(0,1);
 	}
 	for(var i=0; i<boxes.length; i++){
-		boxes[i].x -= 1;
+		boxes[i].x -= levelSpeed;
 	}
 
 
 	//Adjust player velocity in accordance with gravity and friction
 	player.velX *= friction;
 	player.velY += gravity;
+
+	//If player hits left game edge, display game over and pause game
+	if(player.x < 0){
+		playing = false;
+	}
 
   //Clear previous animation frame from canvas
   ctx.clearRect(0,0,width,height);
@@ -146,6 +149,11 @@ function update(){
   	ctx.drawImage(background[i].img, background[i].x+width*2, background[i].y);
   }
 
+  //Update player position based on velocities
+  //If player is going past right hand side of screen, make them stand still for this frame
+  if(player.x+player.width+player.velX > width){
+  	player.velX = 0;
+  }
   player.x += player.velX;
 	player.y += player.velY;
 
@@ -181,19 +189,66 @@ function update(){
 		}
 	}
 
-	ctx.fillStyle = "grey";
-	ctx.font = "15px Arial";
-	ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,20);
-	ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,40);
-	ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,60);
-	ctx.fillText("Coins Collected: "+coinsCollected,width-150,20);
-
 	//Draw player
   ctx.fillStyle = "red";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
+	if(playing){
+		ctx.fillStyle = "grey";
+		ctx.font = "15px Arial";
+		ctx.textAlign = "left";
+		ctx.fillText("Player X:"+player.x+" Y:"+player.y,10,20);
+		ctx.fillText("Vel X:"+player.velX.toFixed(2)+"Vel Y:"+player.velY.toFixed(2),10,40);
+		ctx.fillText("Jumping:"+player.jumping+" Grounded:"+player.grounded,10,60);
+		ctx.fillText("Level Speed:"+levelSpeed+" BoxHeight: "+variableBoxHeight,10,80);
+		ctx.fillText("Coins Collected: "+coinsCollected,width-150,20);
+	}else{
+		ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+		ctx.fillRect(0, 0, width, height);
+		ctx.fillStyle = "grey";
+		ctx.font = "25px Arial";
+		ctx.textAlign = "center";
+		ctx.fillText("Game Over",width/2,80);
+		ctx.fillText("You collected "+coinsCollected+" coins!",width/2,120);
+		ctx.font = "15px Arial";
+		ctx.fillText("Press Enter to play again",width/2,160);
+
+	}
+
+  //Speed up level and player
+  if(levelSpeed < player.speed*0.80){
+  	levelSpeed += levelSpeedUp;
+  }
+  if(variableBoxHeight <= maxBoxHeight){
+		variableBoxHeight += levelSpeedUp*10;
+  }
+  
   // run through the loop again
-  requestAnimationFrame(update);
+  if(playing){
+  	requestAnimationFrame(update);
+  }
+}
+
+function resetLevel(){
+	coinsCollected = 0;
+  levelSpeed = 1;
+  player = {
+	  x : width/2,
+	  y : height - 5,
+	  width : 10,
+	  height : 10,
+	  speed: 4,
+	  velX: 0,
+	  velY: 0,
+	  jumping : false,
+	  grounded: false
+	};
+	variableBoxHeight = minBoxHeight,
+	background[0].x = 0;
+	background[1].x = 0;
+	background[2].x = 0;
+	boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight + boxBuffer}];
+	coins = [];
 }
 
 function colCheck(shapeA, shapeB) {
@@ -234,6 +289,11 @@ function colCheck(shapeA, shapeB) {
 //Assign click handlers to body element and adjust "key" booleans accordingly
 $('body').keydown(function(key) {
 	keys[key.which] = true;
+	if(key.which === 13 && !playing){
+		playing = true; 
+		resetLevel();
+		update();
+	}
 });
 
 $('body').keyup(function(key) {
