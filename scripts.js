@@ -10,23 +10,26 @@ var canvas = document.getElementById("canvas"),
     width = 1000,
     height = 200,
     playing = true,
-    currentFrame = 0,
+    newAnimation = true,
     coinsCollected = 0,
     coinSpawnChance = 0.01,
     levelSpeed = 1,
     levelSpeedUp = 0.001,
     maxSpeedPercent = 0.73,
     player = {
+    	img : new Image(),
 		  x : width/2,
-		  y : height - 5,
-		  width : 10,
-		  height : 10,
+		  y : height - 20,
+		  width : 30,	//Sets the hitbox width for the character
+		  height : 35,	//Sets the hitbox height for the character
 		  speed: 4,
 		  velX: 0,
 		  velY: 0,
 		  jumping : false,
 		  doubleJump: false,
-		  grounded: false
+		  grounded: false,
+		  action: "running",
+		  frame : 0
 		},
 		keys = [],
 		friction = 0.8,
@@ -35,14 +38,25 @@ var canvas = document.getElementById("canvas"),
 		minBoxHeight = 10,
 		variableBoxHeight = minBoxHeight,
 		maxBoxWidth = 100,
-		minBoxWidth = 10,
+		minBoxWidth = player.width,
 		boxBuffer = 100,		//How far boxes go underneath canvas
 		minStepSize = 2;
+
+var animationKey = {
+	//Each animation hash holds x position, y position, spriteSheet width, spriteSheet height, number of frames and delay between frames
+	coin: {spinning:{x:0,y:0,width:72,height:14,numFrames:6,frameDelay:6}},
+	taylor: {eating:{x:0,y:0,width:80,height:25,numFrames:4,frameDelay:6}},
+	fox: {
+		running:{x:0,y:0,width:176,height:35,numFrames:4,frameDelay:6}
+	}
+}
 
 canvas.width = width;
 canvas.height = height;
 
-coinFrame = 0;
+player.img.src = "assets/fox-running.png";
+console.log(player.height + " " + player.width);
+
 coinImg = new Image();
 coinImg.src = "assets/coin_sprite.png";
 
@@ -119,7 +133,8 @@ function update(){
 			x: width,
 			y: Math.random()*(boxes[boxes.length-1].y - coinImg.height),
 			width: 12,
-			height: coinImg.height
+			height: coinImg.height,
+			frame: 0
 		})
 	}
 
@@ -182,8 +197,7 @@ function update(){
 	player.y += player.velY;
 
 	//Draw player
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+	drawAnimationFrame(player, "fox", player.action, player.img, ctx);
 
   //Draw the terrain
   ctx.fillStyle = "#334C33";
@@ -229,12 +243,8 @@ function update(){
 			coins.splice(i,1);
 			i -= 1;
 		}else{
-			ctx.drawImage(coinImg, coinFrame*2+coinFrame*11, 0, 12, 14, coins[i].x, coins[i].y, 12, 14);
+			drawAnimationFrame(coins[i], "coin", "spinning", coinImg, ctx);
 		}
-	}
-	if(currentFrame%6 === 0){
-		coinFrame += 1;
-		if(coinFrame > 4){coinFrame = 0;}
 	}
 
 	//Draw foreground
@@ -274,7 +284,6 @@ function update(){
   
   // run through the loop again
   if(playing){
-  	currentFrame += 1;
   	requestAnimationFrame(update);
   }
 }
@@ -282,18 +291,20 @@ function update(){
 function resetLevel(){
 	coinsCollected = 0;
   levelSpeed = 1;
-  currentFrame = 0;
   player = {
+	  img : player.img,
 	  x : width/2,
-	  y : height - 5,
-	  width : 10,
-	  height : 10,
+	  y : height - 20,
+	  width : 30,	//Sets the hitbox width for the character
+	  height : 35,	//Sets the hitbox height for the character
 	  speed: 4,
 	  velX: 0,
 	  velY: 0,
 	  jumping : false,
 	  doubleJump: false,
-	  grounded: false
+	  grounded: false,
+	  action: "running",
+	  frame : 0
 	};
 	variableBoxHeight = minBoxHeight,
 	background[0].x = 0;
@@ -301,6 +312,18 @@ function resetLevel(){
 	background[2].x = 0;
 	boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight + boxBuffer}];
 	coins = [];
+}
+
+//Function to get correct animation frame for a specific object doing a specific action
+function drawAnimationFrame(object, key, action, spriteSheet, canvas){
+	var aKey = animationKey[key][action];
+	var frameWidth = aKey.width/aKey.numFrames;
+	if(newAnimation || object.frame >= aKey.numFrames*aKey.frameDelay){
+		object.frame = 0;
+		newAnimation = false;
+	}
+	canvas.drawImage(spriteSheet, Math.floor(object.frame/aKey.frameDelay)*frameWidth, aKey.y, frameWidth, aKey.height, object.x, object.y, frameWidth, aKey.height);
+	object.frame += 1;
 }
 
 function colCheck(shapeA, shapeB) {
@@ -356,24 +379,3 @@ $('body').keyup(function(key) {
 $(document).ready(function(){
 	update();
 });
-
-/*Add box to end of level if needed HORIZONTAL STACKING!
-	if(Math.random() < boxSpawnChance){
-		var lastBoxY = height, lastBoxWidth = 0;
-		//Find highest box on map edge to spawn
-		for(var i=0; i<boxes.length; i++){
-			if(boxes[i].x+boxes[i].width > width+minBoxWidth && boxes[i].y < lastBoxY){
-				lastBoxY = boxes[i].y;
-				lastBoxWidth = (boxes[i].x+boxes[i].width)-width;
-			}
-		}
-		//Find height for box
-		var tempY = lastBoxY - Math.floor(Math.random()*maxBoxHeight);
-		if(tempY < 30){tempY = 30;}
-		boxes.push({
-	    x: width,
-	    y: tempY,
-	    width: minBoxWidth+Math.floor(Math.random()*(lastBoxWidth-minBoxWidth)),
-	    height: lastBoxY-tempY
-		});
-	}*/
