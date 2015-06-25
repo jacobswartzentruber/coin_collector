@@ -20,7 +20,7 @@ var canvas = document.getElementById("canvas"),
     	img : new Image(),
 		  x : width/2,
 		  y : height - 20,
-		  width : 30,	//Sets the hitbox width for the character
+		  width : 44,	//Sets the hitbox width for the character
 		  height : 35,	//Sets the hitbox height for the character
 		  speed: 4,
 		  velX: 0,
@@ -28,7 +28,8 @@ var canvas = document.getElementById("canvas"),
 		  jumping : false,
 		  doubleJump: false,
 		  grounded: false,
-		  action: "running",
+		  action: "runningRight",
+		  dirFacing: "R",
 		  frame : 0
 		},
 		keys = [],
@@ -47,14 +48,23 @@ var animationKey = {
 	coin: {spinning:{x:0,y:0,width:72,height:14,numFrames:6,frameDelay:6}},
 	taylor: {eating:{x:0,y:0,width:80,height:25,numFrames:4,frameDelay:6}},
 	fox: {
-		running:{x:0,y:0,width:176,height:35,numFrames:4,frameDelay:6}
+		runningRight:{x:0,y:0,width:176,height:35,numFrames:4,frameDelay:7},
+		runningLeft: {x:0,y:35,width:176,height:35,numFrames:4,frameDelay:7},
+		jumpingRight: {x:0,y:70,width:44,height:35,numFrames:1,frameDelay:6},
+		jumpingLeft: {x:44,y:70,width:44,height:35,numFrames:1,frameDelay:6},
+		jumpingIdleRight: {x:88,y:0,width:44,height:35,numFrames:1,frameDelay:6},
+		jumpingIdleLeft: {x:44,y:35,width:44,height:35,numFrames:1,frameDelay:6},
+		fallingRight: {x:132,y:0,width:44,height:35,numFrames:1,frameDelay:6},
+		fallingLeft: {x:0,y:35,width:44,height:35,numFrames:1,frameDelay:6},
+		idleRight: {x:0,y:0,width:44,height:35,numFrames:1,frameDelay:6},
+		idleLeft: {x:132,y:35,width:44,height:35,numFrames:1,frameDelay:6}
 	}
 }
 
 canvas.width = width;
 canvas.height = height;
 
-player.img.src = "assets/fox-running.png";
+player.img.src = "assets/fox_sprite.png";
 console.log(player.height + " " + player.width);
 
 coinImg = new Image();
@@ -101,9 +111,9 @@ function update(){
 	}
 	if (keys[39]) {
 		// right arrow
-		if (player.velX < player.speed) {                         
-		   player.velX++;                  
-		}          
+		if (player.velX < player.speed) {
+		  player.velX++;                  
+		}   
 	}          
 	if (keys[37]) {                 
 		// left arrow                  
@@ -196,6 +206,31 @@ function update(){
   player.x += player.velX;
 	player.y += player.velY;
 
+	//Update which way player is facing
+	if(player.velX > 0){player.dirFacing = "R";}
+	else if(player.velX < 0){player.dirFacing = "L";}
+
+	//Update player animation depending on context
+	if(player.grounded){
+		if(player.velX < -0.5){player.action = "runningLeft";}
+		else if(player.velX > 0.5){player.action = "runningRight";}
+		else{
+			if(player.dirFacing === "R"){player.action = "idleRight";}
+			else{player.action = "idleLeft";}
+		}
+	}
+	else{
+		if(player.dirFacing === "R"){
+			if(player.velY < -1){player.action = "jumpingRight";}
+			else if(player.velY > 1){player.action = "fallingRight";}
+			else{player.action = "jumpingIdleRight";}
+		}else{
+			if(player.velY < -1){player.action = "jumpingLeft";}
+			else if(player.velY > 1.){player.action = "fallingLeft";}
+			else{player.action = "jumpingIdleLeft";}
+		}
+	}
+
 	//Draw player
 	drawAnimationFrame(player, "fox", player.action, player.img, ctx);
 
@@ -264,7 +299,7 @@ function update(){
 	}else{
 		ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
 		ctx.fillRect(0, 0, width, height);
-		ctx.fillStyle = "grey";
+		ctx.fillStyle = "white";
 		ctx.font = "25px Arial";
 		ctx.textAlign = "center";
 		ctx.fillText("Game Over",width/2,80);
@@ -322,7 +357,7 @@ function drawAnimationFrame(object, key, action, spriteSheet, canvas){
 		object.frame = 0;
 		newAnimation = false;
 	}
-	canvas.drawImage(spriteSheet, Math.floor(object.frame/aKey.frameDelay)*frameWidth, aKey.y, frameWidth, aKey.height, object.x, object.y, frameWidth, aKey.height);
+	canvas.drawImage(spriteSheet, aKey.x+Math.floor(object.frame/aKey.frameDelay)*frameWidth, aKey.y, frameWidth, aKey.height, object.x, object.y, frameWidth, aKey.height);
 	object.frame += 1;
 }
 
