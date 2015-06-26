@@ -1,8 +1,43 @@
 h1, .instructions{
 	text-align: center;
 }
-.container{
+#coin-collector{
 	width: 1000px;
+	height: 200px;
+}
+#game{
+	display: none;
+}
+#loadingScreen{
+	height: 200px;
+	display: block;
+	position: relative;
+	border: 1px solid gray;
+	background-color: #011f4b;
+}
+#loadingTitle{
+	font-size: 35px;
+	font-weight: bold;
+	color: #b3cde0;
+	text-align: center;
+	width: 700px;
+	height: 40px;
+	border: 2px solid #b3cde0;
+	position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -20px 0 0 -350px;
+}
+#loadingBar{
+	width: 0px;
+	
+	height: 40px;
+	position: absolute;
+	background-color: #005b96;
+	border: 2px solid #005b96;
+  top: 50%;
+  left: 50%;
+  margin: -20px 0 0 -350px;
 }
 #canvas{
 	border: 1px solid gray;

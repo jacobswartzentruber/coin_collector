@@ -7,11 +7,17 @@
     <script src="jquery.min.js"></script>
   </head>
   <body>
-    <div class="container">
+    <div id="coin-collector">
       <h1>Coin Collector</h1>
-      <canvas id="canvas"></canvas>
-      <p class="instructions">Use the arrow keys to move.  Press up or spacebar to jump</p>
-      <p class="instructions">After the apex of your jump, press up or spacebar again to perform a double jump!</p>
+      <div id="game">
+        <canvas id="canvas"></canvas>
+        <p class="instructions">Use the arrow keys to move.  Press up or spacebar to jump</p>
+        <p class="instructions">After the apex of your jump, press up or spacebar again to perform a double jump!</p>
+      </div>
+      <div id="loadingScreen">
+        <div id="loadingBar"></div>
+        <div id="loadingTitle">LOADING</div>
+      </div>
     </div>
     <script type="text/javascript" src="scripts.js"></script>
   </body>

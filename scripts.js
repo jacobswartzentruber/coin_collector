@@ -41,7 +41,8 @@ var canvas = document.getElementById("canvas"),
 		maxBoxWidth = 100,
 		minBoxWidth = player.width,
 		boxBuffer = 100,		//How far boxes go underneath canvas
-		minStepSize = 2;
+		minStepSize = 2,
+		numImagesLoaded = 0;
 
 var animationKey = {
 	//Each animation hash holds x position, y position, spriteSheet width, spriteSheet height, number of frames and delay between frames
@@ -65,10 +66,12 @@ canvas.width = width;
 canvas.height = height;
 
 player.img.src = "assets/fox_sprite.png";
+player.img.onload = updateLoading;
 console.log(player.height + " " + player.width);
 
 coinImg = new Image();
 coinImg.src = "assets/coin_sprite.png";
+coinImg.onload = updateLoading;
 
 //Adding background images to the level
 var background = [];
@@ -79,15 +82,20 @@ background.push(
 	{x: 0, y: 0, img: new Image()}
 );
 background[0].img.src = "assets/sky.png";
+background[0].img.onload = updateLoading;
 background[1].img.src = "assets/mountains.png";
+background[1].img.onload = updateLoading;
 background[2].img.src = "assets/treeline.png";
+background[2].img.onload = updateLoading;
 background[3].img.src = "assets/terrain.jpg";
+background[3].img.onload = updateLoading;
 
 var foreground = {x: 0, y: 0, img: new Image()};
 foreground.img.src = "";
 
 var grass = new Image();
 grass.src = "assets/grass.png";
+grass.onload = updateLoading;
 
 //Adding terrain to the level
 var boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight + boxBuffer}];
@@ -95,6 +103,17 @@ var boxes = [{x: 0, y: height - minBoxHeight, width: width, height: minBoxHeight
 //Adding coins to the level
 var coins = [];
  
+//Update the loading screen progress bar
+function updateLoading(){
+  numImagesLoaded++;
+  console.log(numImagesLoaded);
+  $('#loadingBar').css("width",(7/numImagesLoaded)*700);
+  if(numImagesLoaded == 7){
+    $('#game').css("display","block");
+		$('#loadingScreen').css("display","none");
+  } 
+}
+
 // The update function which calculates each animation frame
 function update(){
 	// check keys and update player velocity accordingly
@@ -330,7 +349,7 @@ function resetLevel(){
 	  img : player.img,
 	  x : width/2,
 	  y : height - 20,
-	  width : 30,	//Sets the hitbox width for the character
+	  width : 44,	//Sets the hitbox width for the character
 	  height : 35,	//Sets the hitbox height for the character
 	  speed: 4,
 	  velX: 0,
@@ -411,6 +430,6 @@ $('body').keyup(function(key) {
 });
 
 //Call update() when document has finished loading to start animation
-$(document).ready(function(){
+$(window).load(function(){
 	update();
 });
