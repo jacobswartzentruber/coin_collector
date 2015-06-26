@@ -10,7 +10,6 @@ var canvas = document.getElementById("canvas"),
     width = 1000,
     height = 200,
     playing = true,
-    newAnimation = true,
     coinsCollected = 0,
     coinSpawnChance = 0.01,
     levelSpeed = 1,
@@ -20,15 +19,15 @@ var canvas = document.getElementById("canvas"),
     	img : new Image(),
 		  x : width/2,
 		  y : height - 20,
-		  width : 44,	//Sets the hitbox width for the character
-		  height : 35,	//Sets the hitbox height for the character
+		  width : 44,
+		  height : 35,
 		  speed: 4,
 		  velX: 0,
 		  velY: 0,
 		  jumping : false,
 		  doubleJump: false,
 		  grounded: false,
-		  action: "runningRight",
+		  action: "idleRight",
 		  dirFacing: "R",
 		  frame : 0
 		},
@@ -230,6 +229,7 @@ function update(){
 	else if(player.velX < 0){player.dirFacing = "L";}
 
 	//Update player animation depending on context
+	var oldAction = player.action;
 	if(player.grounded){
 		if(player.velX < -0.5){player.action = "runningLeft";}
 		else if(player.velX > 0.5){player.action = "runningRight";}
@@ -249,6 +249,9 @@ function update(){
 			else{player.action = "jumpingIdleLeft";}
 		}
 	}
+
+	//If new action is different than previous frame, set player.frame to zero
+	if(player.action !== oldAction){player.frame = 0;}
 
 	//Draw player
 	drawAnimationFrame(player, "fox", player.action, player.img, ctx);
@@ -349,18 +352,19 @@ function resetLevel(){
 	  img : player.img,
 	  x : width/2,
 	  y : height - 20,
-	  width : 44,	//Sets the hitbox width for the character
-	  height : 35,	//Sets the hitbox height for the character
+	  width : 44,
+	  height : 35,
 	  speed: 4,
 	  velX: 0,
 	  velY: 0,
 	  jumping : false,
 	  doubleJump: false,
 	  grounded: false,
-	  action: "running",
+	  action: "idleRight",
+	  dirFacing: "R",
 	  frame : 0
 	};
-	variableBoxHeight = minBoxHeight,
+	variableBoxHeight = minBoxHeight;
 	background[0].x = 0;
 	background[1].x = 0;
 	background[2].x = 0;
@@ -372,9 +376,8 @@ function resetLevel(){
 function drawAnimationFrame(object, key, action, spriteSheet, canvas){
 	var aKey = animationKey[key][action];
 	var frameWidth = aKey.width/aKey.numFrames;
-	if(newAnimation || object.frame >= aKey.numFrames*aKey.frameDelay){
+	if(object.frame >= aKey.numFrames*aKey.frameDelay){
 		object.frame = 0;
-		newAnimation = false;
 	}
 	canvas.drawImage(spriteSheet, aKey.x+Math.floor(object.frame/aKey.frameDelay)*frameWidth, aKey.y, frameWidth, aKey.height, object.x, object.y, frameWidth, aKey.height);
 	object.frame += 1;
