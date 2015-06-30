@@ -56,8 +56,8 @@ var animationKey = {
 		jumpingIdleLeft: {x:44,y:35,width:44,height:35,numFrames:1,frameDelay:6},
 		fallingRight: {x:132,y:0,width:44,height:35,numFrames:1,frameDelay:6},
 		fallingLeft: {x:0,y:35,width:44,height:35,numFrames:1,frameDelay:6},
-		idleRight: {x:0,y:0,width:44,height:35,numFrames:1,frameDelay:6},
-		idleLeft: {x:132,y:35,width:44,height:35,numFrames:1,frameDelay:6}
+		idleRight: {x:0,y:105,width:352,height:35,numFrames:8,frameDelay:6},
+		idleLeft: {x:0,y:140,width:352,height:35,numFrames:8,frameDelay:6},
 	}
 }
 
