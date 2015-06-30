@@ -53,11 +53,11 @@ var animationKey = {
 		jumpingRight: {x:0,y:70,width:44,height:35,numFrames:1,frameDelay:6},
 		jumpingLeft: {x:44,y:70,width:44,height:35,numFrames:1,frameDelay:6},
 		jumpingIdleRight: {x:88,y:0,width:44,height:35,numFrames:1,frameDelay:6},
-		jumpingIdleLeft: {x:44,y:35,width:44,height:35,numFrames:1,frameDelay:6},
+		jumpingIdleLeft: {x:88,y:35,width:44,height:35,numFrames:1,frameDelay:6},
 		fallingRight: {x:132,y:0,width:44,height:35,numFrames:1,frameDelay:6},
-		fallingLeft: {x:0,y:35,width:44,height:35,numFrames:1,frameDelay:6},
+		fallingLeft: {x:132,y:35,width:44,height:35,numFrames:1,frameDelay:6},
 		idleRight: {x:0,y:105,width:352,height:35,numFrames:8,frameDelay:6},
-		idleLeft: {x:0,y:140,width:352,height:35,numFrames:8,frameDelay:6},
+		idleLeft: {x:0,y:140,width:352,height:35,numFrames:8,frameDelay:6}
 	}
 }
 
@@ -104,9 +104,8 @@ var coins = [];
  
 //Update the loading screen progress bar
 function updateLoading(){
-  numImagesLoaded++;
-  console.log(numImagesLoaded);
-  $('#loadingBar').css("width",(7/numImagesLoaded)*700);
+  numImagesLoaded += 1;
+  $('#loadingBar').css("width",(numImagesLoaded/7)*700);
   if(numImagesLoaded == 7){
     $('#game').css("display","block");
 		$('#loadingScreen').css("display","none");
