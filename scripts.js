@@ -327,7 +327,6 @@ function update(){
 		ctx.fillText("You collected "+coinsCollected+" coins!",width/2,120);
 		ctx.font = "15px Arial";
 		ctx.fillText("Press Enter to play again",width/2,160);
-
 	}
 
   //Speed up level and player
@@ -419,6 +418,7 @@ function colCheck(shapeA, shapeB) {
 
 //Assign click handlers to body element and adjust "key" booleans accordingly
 $('body').keydown(function(key) {
+	key.preventDefault();
 	keys[key.which] = true;
 	if(key.which === 13 && !playing){
 		playing = true; 
